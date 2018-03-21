@@ -1,29 +1,27 @@
-import sys
-import time
 import json
 import certifi
 import urllib3
 
 
-def bitcoin_thread():
-    # HTTPS Settings
-    http = urllib3.PoolManager(
-            cert_reqs='CERT_REQUIRED',
-            ca_certs=certifi.where())
-    request = http.request('GET', 'https://api.bitflyer.jp/v1/board?product_code=BTC_JPY')
+class BitcoinMid:
+    status = True
+    message = ''
 
-    # HTTP Status check
-    if request.status == 200:
-        res_json = json.loads(request.data)
-        print(res_json['mid_price'])
-    else:
-        print('Request Error!!! Status:{0}'.format(request.status))
-        sys.exit
+    def get_mid(self):
+        # HTTPS Settings
+        http = urllib3.PoolManager(
+                cert_reqs='CERT_REQUIRED',
+                ca_certs=certifi.where())
+        request = http.request('GET', 'https://api.bitflyer.jp/v1/board?product_code=BTC_JPY')
 
-    time.sleep(60)
+        self.status = request.status
 
-try:
-    while True:
-        bitcoin_thread()
-except KeyboardInterrupt:
-    sys.exit
+        # HTTP Status check
+        if request.status == 200:
+            res_json = json.loads(request.data)
+            self.message = res_json['mid_price']
+
+            return True
+        else:
+            return False
+
